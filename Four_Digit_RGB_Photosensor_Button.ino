@@ -70,6 +70,7 @@ byte Debounce = 60;
 bool NotPassedYet1 = true;
 
 
+
 void setup() {
 /*  pinMode(latch,OUTPUT);
   pinMode(clock,OUTPUT);
@@ -254,7 +255,7 @@ void loop() {
     byte Button1Status = debounce();
     Serial.print("button 1 status == ");
     Serial.println(Button1Status);
-    if(Button1Status == LOW && looper == 0){
+    if(Button1Status == LOW && looper == 0 && looper2 == 1){
       BLINK_ON();
       looper = 1;
       timer = currentTime;
@@ -262,6 +263,11 @@ void loop() {
     if(Button1Status == LOW && looper == 1 && (currentTime - timer) > (blinkDelay*2)){
       BLINK_OFF();
       looper = 0;
+      looper2 = 0;
+      timer = currentTime;
+    }
+    if(looper2 == 0 && (currentTime - timer) > (blinkDelay*2)){
+      looper2 = 1;
     }
   }
   
