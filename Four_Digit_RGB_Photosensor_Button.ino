@@ -15,10 +15,11 @@ const int DIGIT_3 = 12;
 const int DIGIT_4 = 11;
 
 
-
+*/
 const int BUTTON_1 = 2;
 const int BUTTON_2 = 3;
 
+/*
 int lightPin = 0;
 
 
@@ -60,10 +61,13 @@ int Count_Button_1 = 0;
 unsigned long timer = 0;
 unsigned long currentTime = 0;
 bool looper = 0;
+bool looper2 = 0;
 int Program = 0;
 
-
-
+bool LastButton1State = HIGH;
+unsigned long Button1Timer = 0;
+byte Debounce = 60;
+bool NotPassedYet1 = true;
 
 
 void setup() {
@@ -80,14 +84,14 @@ void setup() {
   pinMode(RED,OUTPUT);
   pinMode(GREEN,OUTPUT);
   pinMode(BLUE,OUTPUT);
-  /*
+  
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
-  */
+ 
   Serial.begin(9600);
 
   timer = millis();
-
+  
 }
 
 
@@ -205,12 +209,63 @@ int Buttons_Read(){
 }
 */
 
+bool debounce(){
+  bool Button1CurrentState = digitalRead(BUTTON_1);
+
+  Serial.println("debounce");
+
+  Serial.print("Button1CurrentState == ");
+  Serial.println(Button1CurrentState);
+  Serial.print("LastButton1State == ");
+  Serial.println(LastButton1State);
+  Serial.print("NotPassedYet1 == ");
+  Serial.println(NotPassedYet1);
+  Serial.print("Current Time == ");
+  Serial.println(currentTime);
+  Serial.print("Button1Timer == ");
+  Serial.println(Button1Timer);
+  
+  if (Button1CurrentState == LOW && LastButton1State == HIGH && NotPassedYet1 == true){ // only start counting the debounce if the current button state is pressed, the last button state was not pressed, and we haven't passed a value back yet.
+    LastButton1State = LOW;
+    Button1Timer = currentTime;
+    Serial.println("first if statement");
+  }
+  if (Button1CurrentState == LOW && LastButton1State == LOW && (currentTime - Button1Timer) > Debounce && NotPassedYet1 == true){ // only allows the data to leave if we haven't passed it yet and we've held the button long enough
+    LastButton1State = HIGH;
+    NotPassedYet1 == false;
+    Button1Timer = currentTime;
+    return LOW;
+    Serial.println("second if statement");
+  }
+  if (Button1CurrentState == HIGH && LastButton1State == HIGH && (currentTime - Button1Timer) >= Debounce && NotPassedYet1 == false){ // resets everything after waiting for no debounce from letting off the button
+    NotPassedYet1 == true;
+    Serial.println("third if statement");
+    return HIGH;
+  }
+  return 2;
+}
 
 
 void loop() {
-  Program = 0;
+  Program = 1;
+  currentTime = millis();
+
+  if(Program == 1){
+    byte Button1Status = debounce();
+    Serial.print("button 1 status == ");
+    Serial.println(Button1Status);
+    if(Button1Status == LOW && looper == 0){
+      BLINK_ON();
+      looper = 1;
+      timer = currentTime;
+    }
+    if(Button1Status == LOW && looper == 1 && (currentTime - timer) > (blinkDelay*2)){
+      BLINK_OFF();
+      looper = 0;
+    }
+  }
+  
   if(Program == 0){
-    currentTime = millis();
     if ((currentTime - timer) < blinkDelay && looper == 0){
       BLINK_ON();
       if (looper == 0){
@@ -218,11 +273,13 @@ void loop() {
         timer = currentTime;
       }
     }
-    if ((timer + blinkDelay) <= currentTime && looper == 1){
+    if ((timer + blinkDelay) <= currentTime && looper == 1 && looper2 == 0){
       BLINK_OFF();
+      looper2 = 1;
     }
     if (currentTime > (blinkDelay * 2 + timer)){
       looper = 0;
+      looper2 = 0;
       timer = currentTime;
     }
     /*(delay (200);
