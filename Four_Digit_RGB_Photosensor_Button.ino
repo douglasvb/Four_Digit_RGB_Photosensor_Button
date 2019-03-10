@@ -4,6 +4,7 @@
 //Spaghetti code by Douglas L. Van Bossuyt.  Heavily borrowed elements from the Elegoo Super Starter Kit and 
 //elsewhere online as I needed to figure things out.
 
+/*
 int latch=9;  //74HC595  pin 9 STCP
 int clock=10; //74HC595  pin 10 SHCP
 int data=8;   //74HC595  pin 8 DS
@@ -13,9 +14,7 @@ const int DIGIT_2 = 4;
 const int DIGIT_3 = 12;
 const int DIGIT_4 = 11;
 
-const int BLUE = A1;
-const int GREEN = 5;
-const int RED = 6;
+
 
 const int BUTTON_1 = 2;
 const int BUTTON_2 = 3;
@@ -26,8 +25,49 @@ int lightPin = 0;
 
 unsigned char table[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71,0x00};
 
+*/
+
+const int BLUE = A1;
+const int GREEN = 5;
+const int RED = 6;
+
+// Modifiable variables here:
+int DelayInterval = 10;
+int blinkDelay = 500;
+unsigned long debounceDelay = 500;
+
+/*
+// Defined variables here:
+int Button_Read_1 = 0;
+int Button_Read_2 = 0;
+int photoDiode = 0;
+int blinkCounter = 0;
+
+unsigned long lastDebounceTime1 = 0;
+unsigned long lastDebounceTime2 = 0;
+*/
+
+/*
+int lastButton_1State = 1;
+int lastButton_2State = 1;
+int Button_1_Raw_State = 1;
+int Button_2_Raw_State = 1;
+int Count_Button_1 = 0;
+
+*/
+// playing around variables
+
+unsigned long timer = 0;
+unsigned long currentTime = 0;
+bool looper = 0;
+int Program = 0;
+
+
+
+
+
 void setup() {
-  pinMode(latch,OUTPUT);
+/*  pinMode(latch,OUTPUT);
   pinMode(clock,OUTPUT);
   pinMode(data,OUTPUT);
   
@@ -35,41 +75,23 @@ void setup() {
   pinMode(DIGIT_2,OUTPUT);
   pinMode(DIGIT_3,OUTPUT);
   pinMode(DIGIT_4,OUTPUT);
+  */
 
   pinMode(RED,OUTPUT);
   pinMode(GREEN,OUTPUT);
   pinMode(BLUE,OUTPUT);
-  
+  /*
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
-  
+  */
   Serial.begin(9600);
+
+  timer = millis();
 
 }
 
 
-// Modifiable variables here:
-int DelayInterval = 10;
-int blinkDelay = 50;
-unsigned long debounceDelay = 500;
-
-// Defined variables here:
-int Button_Read_1 = 0;
-int Button_Read_2 = 0;
-int Program = 0;
-int photoDiode = 0;
-int blinkCounter = 0;
-
-unsigned long lastDebounceTime1 = 0;
-unsigned long lastDebounceTime2 = 0;
-
-
-int lastButton_1State = 1;
-int lastButton_2State = 1;
-int Button_1_Raw_State = 1;
-int Button_2_Raw_State = 1;
-int Count_Button_1 = 0;
-
+/*
 void Display(int Digit, unsigned char num)
 {
 
@@ -122,7 +144,7 @@ void RGB(int red, int green, int blue, int DELAY){
     analogWrite(BLUE, blue);
     delay(DELAY);
 }
-
+*/
 void BLINK_ON(){  
   digitalWrite(RED, HIGH);
   digitalWrite(BLUE, HIGH);
@@ -137,7 +159,7 @@ void BLINK_OFF(){
   return;
 }
 
-
+/*
 int Buttons_Read(){
    Button_1_Raw_State = digitalRead(BUTTON_1);
    Button_2_Raw_State = digitalRead(BUTTON_2);
@@ -181,27 +203,42 @@ int Buttons_Read(){
     return 0;
   }
 }
-
+*/
 
 
 
 void loop() {
+  Program = 0;
   if(Program == 0){
-    if (blinkCounter <= 1){
+    currentTime = millis();
+    if ((currentTime - timer) < blinkDelay && looper == 0){
       BLINK_ON();
+      if (looper == 0){
+        looper = 1;
+        timer = currentTime;
+      }
     }
-    if (blinkCounter = blinkDelay){
+    if ((timer + blinkDelay) <= currentTime && looper == 1){
       BLINK_OFF();
     }
-    if (blinkCounter > (blinkDelay * 2)){
-      blinkCounter = 0;
+    if (currentTime > (blinkDelay * 2 + timer)){
+      looper = 0;
+      timer = currentTime;
     }
-    
-    blinkCounter++;
-    
-    Program = Buttons_Read();
-    
-    if (Program != 0){
+    /*(delay (200);
+    Serial.println("end of program 0");
+    Serial.print("currentTime == ");
+    Serial.println(currentTime);
+    Serial.print("timer == ");
+    Serial.println(timer);
+    Serial.print("blinkDelay == ");
+    Serial.println(blinkDelay);
+    Serial.print("looper == ");
+    Serial.println(looper);
+    */
+    // Program = Buttons_Read();
+
+    /* if (Program != 0){
       Count_Button_1 = 0;
       lastButton_1State = 1;
       lastButton_2State = 1;
@@ -209,9 +246,11 @@ void loop() {
       lastDebounceTime2 = 0;
       ReadOut(0,0,0,Program);
    
-    }
+    }*/
   }
+
   
+  /*
   else if(Program == 1){
       BLINK_OFF();
       int time_since_button_press = millis();
@@ -378,4 +417,5 @@ void loop() {
     Program = 0;
     ReadOut(0,0,0,0);
   }
+  */
 }
