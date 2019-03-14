@@ -58,17 +58,13 @@ int Count_Button_1 = 0;
 */
 // playing around variables
 
-unsigned long timer = 0;
+
 unsigned long currentTime = 0;
-bool looper = 0;
-bool looper2 = 0;
 int Program = 0;
+byte Debounce = 100;
+volatile unsigned long Button1 = 0;   
 
-bool LastButton1State = HIGH;
-unsigned long Button1Timer = 0;
-byte Debounce = 60;
-bool NotPassedYet1 = true;
-
+byte lastBlink = 0;
 
 
 void setup() {
@@ -88,13 +84,13 @@ void setup() {
   
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(BUTTON_1), debounce_2, CHANGE);
  
   Serial.begin(9600);
 
-  timer = millis();
   
 }
-
 
 /*
 void Display(int Digit, unsigned char num)
@@ -154,6 +150,7 @@ void BLINK_ON(){
   digitalWrite(RED, HIGH);
   digitalWrite(BLUE, HIGH);
   digitalWrite(GREEN, HIGH);
+  lastBlink = 0;
   return;
 }
 
@@ -161,6 +158,7 @@ void BLINK_OFF(){
   digitalWrite(RED, LOW);
   digitalWrite(BLUE, LOW);
   digitalWrite(GREEN, LOW);
+  lastBlink = 1;
   return;
 }
 
@@ -210,8 +208,66 @@ int Buttons_Read(){
 }
 */
 
-bool debounce(){
+byte debounce_2(){
+
+  static unsigned long FirstPressTimer;
+  static unsigned long CurrentTime;
+  static bool BeenPressed;
+
+  CurrentTime = millis();
+
+  Serial.println("debounce 2");
+
+  Serial.print("FirstPressTimer == ");
+  Serial.println(FirstPressTimer);
+  Serial.print("CurrentTime == ");
+  Serial.println(CurrentTime);
+  Serial.print("BeenPressed == ");
+  Serial.println(BeenPressed);
+  
+// first record when the button is pressed initially.  
+// only record if enough time has passed since the last button press was sent.
+
+  if (BeenPressed == 0) {
+    FirstPressTimer = CurrentTime;
+    BeenPressed = 1;
+    Serial.println("First If");
+  }
+
+// then see if enough time has passed since the button was initially pressed.  but not too much time since the button has been pressed.
+// pass that button has been pressed
+// also record the time of when this was passed so we can check the next time to make sure enough time was passed.
+
+  else if ((CurrentTime > (FirstPressTimer + Debounce)) && (BeenPressed == 1) ) { // (CurrentTime < ((WhenPassed + Debounce) * 3))) {
+    Button1++;
+    BeenPressed = 0;
+    Serial.println("Second If");
+  }
+  else {
+    Serial.println("else");
+  }
+
+}
+
+
+
+
+//
+//
+
+
+
+/*
+
+int debounce(){
   bool Button1CurrentState = digitalRead(BUTTON_1);
+
+  static bool LastButton1State = HIGH;
+  static unsigned long Button1Timer = 0;
+  static bool NotPassedYet1 = true;
+  static unsigned long iterations = 0;
+  static unsigned long iterationsButtonHeld = 0;
+  static float RatioButtonHeld = 0.75;
 
   Serial.println("debounce");
 
@@ -225,33 +281,112 @@ bool debounce(){
   Serial.println(currentTime);
   Serial.print("Button1Timer == ");
   Serial.println(Button1Timer);
+  Serial.print("iterations == ");
+  Serial.println(iterations);
+  Serial.print("iterationsButtonHeld == ");
+  Serial.println(iterationsButtonHeld);
+
+  iterations++;
   
-  if (Button1CurrentState == LOW && LastButton1State == HIGH && NotPassedYet1 == true){ // only start counting the debounce if the current button state is pressed, the last button state was not pressed, and we haven't passed a value back yet.
+  if (Button1CurrentState == LOW && LastButton1State == HIGH && NotPassedYet1 == true){ 
+    // only start counting the debounce if the current button state is pressed, the last button state was not pressed, and we haven't passed a value back yet.
     LastButton1State = LOW;
     Button1Timer = currentTime;
+    iterations = 1;
+    iterationsButtonHeld = 1;
     Serial.println("first if statement");
   }
-  if (Button1CurrentState == LOW && LastButton1State == LOW && (currentTime - Button1Timer) > Debounce && NotPassedYet1 == true){ // only allows the data to leave if we haven't passed it yet and we've held the button long enough
+  
+  if (Button1CurrentState == LOW && LastButton1State == LOW && (currentTime - Button1Timer) > Debounce && NotPassedYet1 == true && (iterationsButtonHeld >= (iterations * RatioButtonHeld + 1)) &&  iterationsButtonHeld <= iterations){ 
+    // only allows the knowledge that the button has been pressed to leave if we haven't passed it yet and we've held the button long enough.  Also verifies we've been holding the button and not cheating.
     LastButton1State = HIGH;
     NotPassedYet1 == false;
     Button1Timer = currentTime;
     return LOW;
     Serial.println("second if statement");
   }
-  if (Button1CurrentState == HIGH && LastButton1State == HIGH && (currentTime - Button1Timer) >= Debounce && NotPassedYet1 == false){ // resets everything after waiting for no debounce from letting off the button
+  
+  if (Button1CurrentState == HIGH && LastButton1State == HIGH && (currentTime - Button1Timer) >= Debounce && NotPassedYet1 == false){ 
+    // resets everything after waiting for no debounce from letting off the button
     NotPassedYet1 == true;
+    iterations = 0;
+    iterationsButtonHeld = 0;
+    LastButton1State == HIGH;
     Serial.println("third if statement");
     return HIGH;
   }
-  return 2;
+
+  if (Button1CurrentState == LOW && LastButton1State == LOW) {
+    // incriment the button held iterations
+    iterationsButtonHeld++;
+    Serial.println("increment iterationsButtonHeld");
+  }
+
+  if (iterationsButtonHeld < (iterations * RatioButtonHeld + 1)) {
+    // resets everything because the button wasn't held long enough over the debounce duration
+    NotPassedYet1 == true;
+    iterations = 0;
+    iterationsButtonHeld = 0;
+    LastButton1State == HIGH;
+    Serial.println("reset because button wasn't held long enough");
+    return 2;
+  }
+  
+  return 3;
 }
 
 
+*/
+
+
+
+//
+//
+
+
+
+
+
+
+
+
 void loop() {
-  Program = 1;
+  Program = 2;
   currentTime = millis();
 
+  static unsigned long timer = millis();
+  static bool looper = 0;
+  static bool looper2 = 0;
+  
+  static unsigned long Button1Presses = 0;
+  static unsigned long LastTime = 0;
+
+
+  if(Program == 2){
+//    Serial.print("Button1Presses == ");
+//    Serial.println(Button1Presses);
+//    Serial.print("Button1 == ");
+//    Serial.println(Button1);
+
+    if (Button1Presses == Button1) {
+      if (lastBlink == 0) {
+        BLINK_OFF();
+      }
+      else if (lastBlink == 1) {
+        BLINK_ON();
+      }
+      else {
+        Serial.println("ERROR IN BLINKING");
+      }
+      Button1Presses++;
+    }
+    
+    
+  }
+/*
   if(Program == 1){
+
+    
     byte Button1Status = debounce();
     Serial.print("button 1 status == ");
     Serial.println(Button1Status);
@@ -298,10 +433,10 @@ void loop() {
     Serial.println(blinkDelay);
     Serial.print("looper == ");
     Serial.println(looper);
-    */
+    
     // Program = Buttons_Read();
 
-    /* if (Program != 0){
+      if (Program != 0){
       Count_Button_1 = 0;
       lastButton_1State = 1;
       lastButton_2State = 1;
@@ -309,9 +444,9 @@ void loop() {
       lastDebounceTime2 = 0;
       ReadOut(0,0,0,Program);
    
-    }*/
-  }
 
+  }
+/*
   
   /*
   else if(Program == 1){
