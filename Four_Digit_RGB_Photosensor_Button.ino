@@ -4,6 +4,8 @@
 //Spaghetti code by Douglas L. Van Bossuyt.  Heavily borrowed elements from the Elegoo Super Starter Kit and 
 //elsewhere online as I needed to figure things out.
 
+#include <Bounce2.h>
+
 /*
 int latch=9;  //74HC595  pin 9 STCP
 int clock=10; //74HC595  pin 10 SHCP
@@ -18,6 +20,16 @@ const int DIGIT_4 = 11;
 */
 const int BUTTON_1 = 2;
 const int BUTTON_2 = 3;
+
+
+
+// Instantiate a Bounce object
+Bounce debouncer1 = Bounce(); 
+
+// Instantiate another Bounce object
+Bounce debouncer2 = Bounce(); 
+
+
 
 /*
 int lightPin = 0;
@@ -82,12 +94,25 @@ void setup() {
   pinMode(GREEN,OUTPUT);
   pinMode(BLUE,OUTPUT);
   
-  pinMode(BUTTON_1, INPUT_PULLUP);
-  pinMode(BUTTON_2, INPUT_PULLUP);
+  //pinMode(BUTTON_1, INPUT_PULLUP);
+  //pinMode(BUTTON_2, INPUT_PULLUP);
 
-  attachInterrupt(digitalPinToInterrupt(BUTTON_1), debounce_2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_1), debounce_3, CHANGE);
  
   Serial.begin(9600);
+
+
+  // Setup the first button with an internal pull-up :
+  pinMode(BUTTON_1,INPUT_PULLUP);
+  // After setting up the button, setup the Bounce instance :
+  debouncer1.attach(BUTTON_1);
+  debouncer1.interval(5); // interval in ms
+  
+   // Setup the second button with an internal pull-up :
+  pinMode(BUTTON_2,INPUT_PULLUP);
+  // After setting up the button, setup the Bounce instance :
+  debouncer2.attach(BUTTON_2);
+  debouncer2.interval(5); // interval in ms
 
   
 }
@@ -151,7 +176,6 @@ void BLINK_ON(){
   digitalWrite(BLUE, HIGH);
   digitalWrite(GREEN, HIGH);
   lastBlink = 0;
-  return;
 }
 
 void BLINK_OFF(){
@@ -159,7 +183,6 @@ void BLINK_OFF(){
   digitalWrite(BLUE, LOW);
   digitalWrite(GREEN, LOW);
   lastBlink = 1;
-  return;
 }
 
 /*
@@ -208,6 +231,11 @@ int Buttons_Read(){
 }
 */
 
+void debounce_3(){
+  Button1++;
+}
+
+/*
 byte debounce_2(){
 
   static unsigned long FirstPressTimer;
@@ -351,7 +379,7 @@ int debounce(){
 
 
 void loop() {
-  Program = 2;
+  Program = 9;
   currentTime = millis();
 
   static unsigned long timer = millis();
@@ -362,26 +390,62 @@ void loop() {
   static unsigned long LastTime = 0;
 
 
-  if(Program == 2){
-//    Serial.print("Button1Presses == ");
-//    Serial.println(Button1Presses);
-//    Serial.print("Button1 == ");
-//    Serial.println(Button1);
+  // Update the Bounce instances :
+  debouncer1.update();
+  debouncer2.update();
 
-    if (Button1Presses == Button1) {
-      if (lastBlink == 0) {
+  // Get the updated value :
+  int value1 = debouncer1.read();
+  int value2 = debouncer2.read();
+
+
+  if(Program == 9){
+    if ( value1 == LOW || value2 == LOW ) {
+       BLINK_ON();     
+    }
+    else {
+       BLINK_OFF();      
+    }
+  }
+
+  if(Program == 2){
+
+
+    if (Button1Presses < Button1) {
+      if (lastBlink == 0 && ((LastTime + Debounce) < currentTime)) {
         BLINK_OFF();
+        LastTime = currentTime;
       }
-      else if (lastBlink == 1) {
+      else if (lastBlink == 1 && ((LastTime + Debounce) < currentTime)) {
         BLINK_ON();
+        LastTime = currentTime;
       }
       else {
-        Serial.println("ERROR IN BLINKING");
+        Serial.println("ERROR IN BUTTON INPUT 1");
       }
       Button1Presses++;
     }
+    else if (Button1Presses == Button1){
+      if (lastBlink == 0 && ((LastTime + blinkDelay) < currentTime)) {
+        BLINK_OFF();
+        LastTime = currentTime;
+      }
+      else if (lastBlink == 1 && ((LastTime + blinkDelay) < currentTime)) {
+        BLINK_ON();
+        LastTime = currentTime;
+      }
+      else {
+        Serial.println("ERROR IN BUTTON INPUT 2");
+      }
+    }
+    else {
+      Serial.println("ERROR IN PROGRAM 2");
+    }
     
-    
+    Serial.print("Button1Presses == ");
+    Serial.println(Button1Presses);
+    Serial.print("Button1 == ");
+    Serial.println(Button1);  
   }
 /*
   if(Program == 1){
