@@ -153,6 +153,7 @@ void loop() {
 
   static int Program;
   static int DelayInterval = 500;
+  static int fadeDelay = 50;
   static int buttonHold = 1000;
   static unsigned long Timer = 0;
   static int buttonCount = 0;
@@ -223,105 +224,103 @@ void loop() {
 
   else if(Program == 2){
       BLINK_OFF();
-  while(Program == 2){
     for(int Fourth = 0; Fourth < 10; Fourth ++){
       for(int Third = 0; Third < 10; Third ++){
         for(int Second = 0; Second < 10; Second ++){
           for(int First = 0; First < 10; First ++){ 
             for(int i = 0; i < countDelay; i ++){
               ReadOut(First,Second,Third,Fourth);
-                if (debouncer2.read() == LOW) { // exit out of for loop
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
-                  Program = 0;
-                  break;
+                  Program = 10;
+                  Fourth = 10;
+                  Third = 10;
+                  Second = 10;
+                  First = 10;
                 }
             }
-            if (Program == 0) { // exit out of for loop
-             break;
-            }
           }
-          if (Program == 0) { // exit out of for loop
-           break;
-          }
-        }
-        if (Program == 0) { // exit out of for loop
-         break;
+  
         }
       }
-      if (Program == 0) { // exit out of for loop
-       break;
-      }
     }
-    if (Program == 0) { // exit out of for loop
-     break;
-    }
-   }
    Program = 0;
    ReadOut(0,0,0,0);
   }
 
   else if (Program == 3){
       BLINK_OFF();
-   while(Program == 3){
     int redValue = 0;
     int greenValue = 0;
     int blueValue = 0;
 
     for(redValue = 0; redValue < 254; redValue++){
-      RGB(redValue,greenValue,blueValue,DelayInterval);
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay);
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                  redValue = 254;
+                  blueValue = 254;
+                  greenValue = 254;
                 }
     }
 
     for(greenValue = 0; greenValue < 254; greenValue++){
-      RGB(redValue,greenValue,blueValue,DelayInterval);
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay);
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                  redValue = 254;
+                  blueValue = 254;
+                  greenValue = 254;
                 }
     }
 
     for(blueValue = 0; blueValue < 254; blueValue++){
-      RGB(redValue,greenValue,blueValue,DelayInterval); 
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay); 
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                  redValue = 254;
+                  blueValue = 254;
+                  greenValue = 254;
                 }    
     }
 
         for(redValue; redValue > 0; redValue--){
-      RGB(redValue,greenValue,blueValue,DelayInterval);
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay);
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                  redValue = 0;
+                  blueValue = 0;
+                  greenValue = 0;
                 }
     }
 
     for(greenValue; greenValue > 0; greenValue--){
-      RGB(redValue,greenValue,blueValue,DelayInterval);
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay);
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                   redValue = 0;
+                  blueValue = 0;
+                  greenValue = 0;
                 }
     }
 
     for(blueValue; blueValue > 0; blueValue--){
-      RGB(redValue,greenValue,blueValue,DelayInterval); 
-                if (debouncer2.read() == LOW) { // exit out of for loop
+      RGB(redValue,greenValue,blueValue,fadeDelay); 
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                  break;
+                  redValue = 0;
+                  blueValue = 0;
+                  greenValue = 0;
                 } 
     }
 
-   }
+  
   }
 
   else if (Program == 4){
@@ -330,7 +329,6 @@ void loop() {
     int Second = 0;
     int Third = 0;
     int Fourth = 0;
-   while(Program == 4){ 
     int reading  = analogRead(lightPin);
     First = (reading%10);
     Second = ((reading/10)%10);
@@ -338,14 +336,10 @@ void loop() {
     Fourth = (reading/1000);
      
     ReadOut(First,Second,Third,Fourth); 
-                if (debouncer2.read() == LOW) { // exit out of for loop
+                if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-
-                  break;
                 }
-   }
-   Program = 0;
   }
 
   else {
