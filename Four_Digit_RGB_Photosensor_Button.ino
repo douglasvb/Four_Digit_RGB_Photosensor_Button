@@ -16,8 +16,8 @@ const int DIGIT_2 = 4;
 const int DIGIT_3 = 12;
 const int DIGIT_4 = 11;
 
-const int BUTTON_1 = 2;
-const int BUTTON_2 = 3;
+const int BUTTON_1 = A1;
+const int BUTTON_2 = 2;
 
 
 
@@ -38,7 +38,7 @@ unsigned char table[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x
 
 
 
-const int BLUE = A1;
+const int BLUE = 3;
 const int GREEN = 5;
 const int RED = 6;
 
@@ -153,7 +153,7 @@ void loop() {
 
   static int Program;
   static int DelayInterval = 500;
-  static int fadeDelay = 50;
+  static int fadeDelay = 10;
   static int buttonHold = 1000;
   static unsigned long Timer = 0;
   static int buttonCount = 0;
@@ -206,7 +206,8 @@ void loop() {
     else{
       Serial.println("Error in counting buttons");
     }
-
+    
+    ReadOut(buttonCount,buttonCount,buttonCount,buttonCount);
     
   }
 
@@ -221,8 +222,8 @@ void loop() {
       Program = 0;
     }
   }
-
-  else if(Program == 2){
+   
+   else if(Program == 2){
       BLINK_OFF();
     for(int Fourth = 0; Fourth < 10; Fourth ++){
       for(int Third = 0; Third < 10; Third ++){
@@ -303,7 +304,7 @@ void loop() {
                 if (digitalRead(BUTTON_2) == LOW) { // exit out of for loop
                   ReadOut(0,0,0,0);
                   Program = 0;
-                   redValue = 0;
+                  redValue = 0;
                   blueValue = 0;
                   greenValue = 0;
                 }
@@ -317,7 +318,7 @@ void loop() {
                   redValue = 0;
                   blueValue = 0;
                   greenValue = 0;
-                } 
+                }
     }
 
   
